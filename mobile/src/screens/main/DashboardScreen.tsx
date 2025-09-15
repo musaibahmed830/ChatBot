@@ -18,6 +18,7 @@ import {
 } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useQuery } from 'react-query';
+import { useNavigation } from '@react-navigation/native';
 import { useAuthStore } from '../../store/authStore';
 import { theme, spacing } from '../../theme/theme';
 import { apiClient } from '../../services/api';
@@ -42,6 +43,7 @@ interface DashboardStats {
 }
 
 const DashboardScreen: React.FC = () => {
+  const navigation = useNavigation();
   const { user } = useAuthStore();
   const [refreshing, setRefreshing] = useState(false);
 
@@ -164,6 +166,50 @@ const DashboardScreen: React.FC = () => {
         </Card>
       </View>
 
+      {/* Purpose & Niche */}
+      <Card style={styles.card}>
+        <Card.Content>
+          <Title style={styles.cardTitle}>Your Chatbot Purpose</Title>
+          <View style={styles.purposeContainer}>
+            <View style={styles.purposeInfo}>
+              <Text style={styles.purposeLabel}>Category:</Text>
+              <Chip
+                mode="outlined"
+                style={styles.purposeChip}
+                textStyle={styles.purposeChipText}
+              >
+                {user?.chatbotSettings.purpose?.charAt(0).toUpperCase() + user?.chatbotSettings.purpose?.slice(1) || 'General'}
+              </Chip>
+            </View>
+            {user?.chatbotSettings.niche && user.chatbotSettings.niche !== 'general' && (
+              <View style={styles.purposeInfo}>
+                <Text style={styles.purposeLabel}>Niche:</Text>
+                <Chip
+                  mode="outlined"
+                  style={styles.purposeChip}
+                  textStyle={styles.purposeChipText}
+                >
+                  {user.chatbotSettings.niche.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                </Chip>
+              </View>
+            )}
+            {user?.chatbotSettings.businessInfo?.businessName && (
+              <View style={styles.purposeInfo}>
+                <Text style={styles.purposeLabel}>Business:</Text>
+                <Text style={styles.businessName}>{user.chatbotSettings.businessInfo.businessName}</Text>
+              </View>
+            )}
+          </View>
+          <Button
+            mode="outlined"
+            onPress={() => navigation.navigate('CategorySelection')}
+            style={styles.changePurposeButton}
+          >
+            Change Purpose
+          </Button>
+        </Card.Content>
+      </Card>
+
       {/* Connected Platforms */}
       <Card style={styles.card}>
         <Card.Content>
@@ -196,7 +242,7 @@ const DashboardScreen: React.FC = () => {
                 </Text>
                 <Button
                   mode="contained"
-                  onPress={() => {}}
+                  onPress={() => navigation.navigate('SocialAccounts')}
                   style={styles.connectButton}
                 >
                   Connect Platforms
@@ -384,6 +430,35 @@ const styles = StyleSheet.create({
   actionButton: {
     flex: 1,
     minWidth: 100,
+  },
+  purposeContainer: {
+    marginBottom: spacing.md,
+  },
+  purposeInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
+  purposeLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: theme.colors.text,
+    marginRight: spacing.sm,
+    minWidth: 80,
+  },
+  purposeChip: {
+    height: 28,
+  },
+  purposeChipText: {
+    fontSize: 12,
+  },
+  businessName: {
+    fontSize: 14,
+    color: theme.colors.primary,
+    fontWeight: '500',
+  },
+  changePurposeButton: {
+    alignSelf: 'flex-start',
   },
 });
 

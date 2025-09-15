@@ -14,6 +14,7 @@ const whatsappRoutes = require('./routes/whatsapp');
 const instagramRoutes = require('./routes/instagram');
 const snapchatRoutes = require('./routes/snapchat');
 const analyticsRoutes = require('./routes/analytics');
+const categoriesRoutes = require('./routes/categories');
 
 const errorHandler = require('./middleware/errorHandler');
 const logger = require('./utils/logger');
@@ -109,6 +110,7 @@ app.use('/api/whatsapp', whatsappRoutes);
 app.use('/api/instagram', instagramRoutes);
 app.use('/api/snapchat', snapchatRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/categories', categoriesRoutes);
 
 // Webhook endpoints
 app.use('/webhooks/whatsapp', whatsappRoutes);

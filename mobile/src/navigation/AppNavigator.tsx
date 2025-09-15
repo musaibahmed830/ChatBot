@@ -27,6 +27,11 @@ import ChatbotSettingsScreen from '../screens/settings/ChatbotSettingsScreen';
 import SocialAccountsScreen from '../screens/settings/SocialAccountsScreen';
 import NotificationSettingsScreen from '../screens/settings/NotificationSettingsScreen';
 
+// Setup Screens
+import CategorySelectionScreen from '../screens/setup/CategorySelectionScreen';
+import NicheSelectionScreen from '../screens/setup/NicheSelectionScreen';
+import BusinessInfoScreen from '../screens/setup/BusinessInfoScreen';
+
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -146,6 +151,21 @@ const MainStack = () => (
       name="NotificationSettings" 
       component={NotificationSettingsScreen}
       options={{ title: 'Notifications' }}
+    />
+    <Stack.Screen 
+      name="CategorySelection" 
+      component={CategorySelectionScreen}
+      options={{ title: 'Choose Purpose', headerShown: false }}
+    />
+    <Stack.Screen 
+      name="NicheSelection" 
+      component={NicheSelectionScreen}
+      options={{ title: 'Choose Niche', headerShown: false }}
+    />
+    <Stack.Screen 
+      name="BusinessInfo" 
+      component={BusinessInfoScreen}
+      options={{ title: 'Business Info', headerShown: false }}
     />
   </Stack.Navigator>
 );

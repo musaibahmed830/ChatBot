@@ -43,6 +43,16 @@ export interface User {
       end: string;
       timezone: string;
     };
+    purpose: 'general' | 'ecommerce' | 'friends' | 'business' | 'support' | 'education' | 'entertainment' | 'healthcare' | 'realestate' | 'finance' | 'custom';
+    niche: string;
+    customNiche?: string;
+    businessInfo?: {
+      businessName?: string;
+      businessType?: string;
+      targetAudience?: string;
+      keyProducts?: string[];
+      businessGoals?: string[];
+    };
   };
   analytics: {
     totalMessages: number;

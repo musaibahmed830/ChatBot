@@ -33,6 +33,94 @@ class ChatbotService {
     }
   };
 
+  // Category-specific templates
+  static categoryTemplates = {
+    general: {
+      greeting: "Hello! How can I help you today?",
+      context: "I'm here to help with general questions and conversations."
+    },
+    ecommerce: {
+      greeting: "Welcome to our store! How can I help you find what you're looking for?",
+      context: "I can help you with product information, orders, shipping, and returns.",
+      product_inquiry: "I'd be happy to help you with product details!",
+      order_help: "I can assist you with your order status and tracking.",
+      shipping_info: "Let me help you with shipping information and delivery times.",
+      return_policy: "I can provide details about our return and refund policy."
+    },
+    friends: {
+      greeting: "Hey! What's going on?",
+      context: "Just here to chat and have a good time with friends!",
+      casual_chat: "That's cool! Tell me more about that.",
+      funny_response: "Haha, that's hilarious! 😂",
+      supportive: "I'm here for you! You got this! 💪"
+    },
+    business: {
+      greeting: "Hello! How can I assist with your business needs today?",
+      context: "I'm here to help with business inquiries, services, and support.",
+      service_inquiry: "I can provide information about our business services.",
+      consultation: "I'd be happy to schedule a consultation or provide more details.",
+      partnership: "Let me connect you with the right person for partnership opportunities."
+    },
+    support: {
+      greeting: "Hi! I'm here to help resolve any issues you're experiencing.",
+      context: "I specialize in technical support and troubleshooting.",
+      technical_issue: "Let me help you troubleshoot this technical issue.",
+      account_help: "I can assist you with account-related questions.",
+      bug_report: "Thank you for reporting this. Let me document the issue."
+    },
+    education: {
+      greeting: "Welcome! How can I help you learn today?",
+      context: "I'm here to provide educational support and answer questions.",
+      learning_help: "I can help explain concepts and provide learning resources.",
+      homework: "I'd be happy to guide you through this problem step by step.",
+      study_tips: "Let me share some effective study strategies with you."
+    }
+  };
+
+  // Niche-specific knowledge bases
+  static nicheKnowledge = {
+    // E-commerce niches
+    fashion: {
+      keywords: ['clothing', 'fashion', 'style', 'size', 'color', 'material', 'trend'],
+      responses: {
+        sizing: "I can help you find the perfect size! What's your usual size in other brands?",
+        style: "I'd love to help you find the perfect style! What occasion are you shopping for?",
+        material: "Let me tell you about the materials and care instructions for this item."
+      }
+    },
+    electronics: {
+      keywords: ['specs', 'technical', 'compatibility', 'warranty', 'features', 'performance'],
+      responses: {
+        specs: "I can provide detailed technical specifications for this product.",
+        compatibility: "Let me check compatibility with your current setup.",
+        warranty: "I can explain the warranty coverage and terms."
+      }
+    },
+    beauty_health: {
+      keywords: ['skin type', 'ingredients', 'allergies', 'routine', 'results', 'safety'],
+      responses: {
+        skin_type: "I can help you find products suitable for your skin type.",
+        ingredients: "Let me explain the key ingredients and their benefits.",
+        allergies: "I'll make sure to recommend products that are safe for your allergies."
+      }
+    },
+    // Business niches
+    consulting: {
+      keywords: ['strategy', 'consultation', 'expertise', 'solutions', 'implementation'],
+      responses: {
+        strategy: "I can help you develop a strategic plan tailored to your business goals.",
+        consultation: "Let me schedule a consultation to better understand your needs."
+      }
+    },
+    tech_services: {
+      keywords: ['development', 'integration', 'support', 'maintenance', 'security'],
+      responses: {
+        development: "I can discuss our software development services and timelines.",
+        integration: "Let me explain how we can integrate with your existing systems."
+      }
+    }
+  };
+
   // Intent recognition patterns
   static intentPatterns = {
     greeting: ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening'],
@@ -56,10 +144,21 @@ class ChatbotService {
       const intent = this.detectIntent(lowerMessage);
       
       // Get personality templates
-      const templates = this.personalityTemplates[userSettings.personality] || this.personalityTemplates.friendly;
+      const personalityTemplates = this.personalityTemplates[userSettings.personality] || this.personalityTemplates.friendly;
       
-      // Generate response based on intent and context
-      let response = await this.generateIntentResponse(intent, templates, context, conversationHistory);
+      // Get category-specific templates
+      const categoryTemplates = this.categoryTemplates[userSettings.purpose] || this.categoryTemplates.general;
+      
+      // Check for niche-specific responses
+      const nicheResponse = this.getNicheSpecificResponse(lowerMessage, userSettings.niche, userSettings.purpose);
+      
+      // Generate response based on intent, category, and niche
+      let response = await this.generateIntentResponse(intent, personalityTemplates, categoryTemplates, context, conversationHistory, userSettings);
+      
+      // Use niche-specific response if available
+      if (!response && nicheResponse) {
+        response = nicheResponse;
+      }
       
       // If no specific response, use AI service (OpenAI or similar)
       if (!response) {
@@ -71,14 +170,18 @@ class ChatbotService {
         ...context,
         lastIntent: intent,
         lastResponse: response,
-        conversationCount: (context.conversationCount || 0) + 1
+        conversationCount: (context.conversationCount || 0) + 1,
+        userPurpose: userSettings.purpose,
+        userNiche: userSettings.niche
       };
       
       return {
         text: response,
         intent,
         context: updatedContext,
-        confidence: this.calculateConfidence(intent, lowerMessage)
+        confidence: this.calculateConfidence(intent, lowerMessage),
+        category: userSettings.purpose,
+        niche: userSettings.niche
       };
       
     } catch (error) {
@@ -107,38 +210,122 @@ class ChatbotService {
   /**
    * Generate response based on detected intent
    */
-  static async generateIntentResponse(intent, templates, context, conversationHistory) {
+  static async generateIntentResponse(intent, personalityTemplates, categoryTemplates, context, conversationHistory, userSettings) {
+    const { purpose, niche, businessInfo } = userSettings;
+    
     switch (intent) {
       case 'greeting':
         if (context.conversationCount === 0) {
-          return templates.greeting;
+          // Use category-specific greeting
+          if (categoryTemplates.greeting) {
+            return this.customizeResponse(categoryTemplates.greeting, userSettings);
+          }
+          return personalityTemplates.greeting;
         }
         return "Hello again! How can I help you today?";
         
       case 'farewell':
-        return templates.farewell;
+        return personalityTemplates.farewell;
         
       case 'help':
+        if (categoryTemplates.context) {
+          return this.customizeResponse(categoryTemplates.context, userSettings);
+        }
         return "I'm here to help! What specific assistance do you need?";
         
       case 'complaint':
+        if (purpose === 'ecommerce') {
+          return "I'm sorry to hear about this issue with your order. Let me help you resolve it quickly. Can you provide your order number?";
+        } else if (purpose === 'support') {
+          return "I understand your frustration. Let me help troubleshoot this issue step by step.";
+        }
         return "I'm sorry to hear about this issue. Let me help you resolve it. Can you provide more details?";
         
       case 'compliment':
         return "Thank you so much! I'm glad I could help. Is there anything else you need?";
         
       case 'pricing':
+        if (purpose === 'ecommerce') {
+          return "I'd be happy to help with pricing! What specific product are you interested in?";
+        } else if (purpose === 'business') {
+          return "I can provide information about our service packages and pricing. What type of consultation are you looking for?";
+        }
         return "I'd be happy to help with pricing information. What specific product or service are you interested in?";
         
       case 'feature':
+        if (purpose === 'ecommerce' && categoryTemplates.product_inquiry) {
+          return categoryTemplates.product_inquiry;
+        } else if (purpose === 'business' && categoryTemplates.service_inquiry) {
+          return categoryTemplates.service_inquiry;
+        }
         return "Great question! I can help explain our features. What would you like to know more about?";
         
       case 'contact':
+        if (purpose === 'business') {
+          return "I'd be happy to connect you with our team. Would you like to schedule a consultation call?";
+        }
         return "I can help you get in touch with our team. Would you like our contact information or would you prefer to schedule a call?";
         
       default:
         return null; // Will fall back to AI response
     }
+  }
+
+  /**
+   * Get niche-specific response based on keywords
+   */
+  static getNicheSpecificResponse(message, niche, purpose) {
+    if (niche === 'general' || !this.nicheKnowledge[niche]) {
+      return null;
+    }
+
+    const nicheData = this.nicheKnowledge[niche];
+    const keywords = nicheData.keywords;
+    const responses = nicheData.responses;
+
+    // Check if message contains niche-specific keywords
+    for (const keyword of keywords) {
+      if (message.includes(keyword)) {
+        // Find the most relevant response
+        for (const [responseType, responseText] of Object.entries(responses)) {
+          if (message.includes(responseType) || keyword.includes(responseType)) {
+            return responseText;
+          }
+        }
+        // Return a general niche response
+        return responses[Object.keys(responses)[0]];
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Customize response with business information
+   */
+  static customizeResponse(template, userSettings) {
+    const { businessInfo, niche } = userSettings;
+    
+    if (!businessInfo || !businessInfo.businessName) {
+      return template;
+    }
+
+    // Replace placeholders with business information
+    let customizedResponse = template;
+    
+    if (customizedResponse.includes('our store')) {
+      customizedResponse = customizedResponse.replace('our store', businessInfo.businessName);
+    }
+    
+    if (customizedResponse.includes('our services')) {
+      customizedResponse = customizedResponse.replace('our services', `${businessInfo.businessName} services`);
+    }
+    
+    if (customizedResponse.includes('our team')) {
+      customizedResponse = customizedResponse.replace('our team', `${businessInfo.businessName} team`);
+    }
+
+    return customizedResponse;
   }
 
   /**
@@ -165,8 +352,7 @@ class ChatbotService {
    */
   static async generateOpenAIResponse(message, userSettings, conversationHistory) {
     try {
-      const personality = userSettings.personality;
-      const language = userSettings.language;
+      const { personality, language, purpose, niche, businessInfo } = userSettings;
       
       // Build conversation context
       const contextMessages = conversationHistory
@@ -174,15 +360,47 @@ class ChatbotService {
         .map(msg => `${msg.sender}: ${msg.content}`)
         .join('\n');
       
+      // Build category and niche context
+      let categoryContext = '';
+      if (purpose !== 'general') {
+        categoryContext += `\nPurpose: You are a chatbot for ${purpose} purposes.`;
+        
+        if (niche && niche !== 'general') {
+          categoryContext += `\nNiche: You specialize in ${niche} within the ${purpose} category.`;
+        }
+        
+        if (businessInfo && businessInfo.businessName) {
+          categoryContext += `\nBusiness: You represent ${businessInfo.businessName}.`;
+          if (businessInfo.businessType) {
+            categoryContext += ` Business type: ${businessInfo.businessType}.`;
+          }
+          if (businessInfo.targetAudience) {
+            categoryContext += ` Target audience: ${businessInfo.targetAudience}.`;
+          }
+        }
+      }
+      
+      // Get niche-specific guidelines
+      let nicheGuidelines = '';
+      if (niche && this.nicheKnowledge[niche]) {
+        const nicheData = this.nicheKnowledge[niche];
+        nicheGuidelines = `\nSpecialized knowledge areas: ${nicheData.keywords.join(', ')}.`;
+      }
+      
       const prompt = `You are a helpful chatbot assistant with a ${personality} personality. 
-      Respond in ${language === 'en' ? 'English' : language}.
+      Respond in ${language === 'en' ? 'English' : language}.${categoryContext}${nicheGuidelines}
       
       Previous conversation context:
       ${contextMessages}
       
       Current message: ${message}
       
-      Respond in a ${personality} manner, keeping responses concise and helpful.`;
+      Respond in a ${personality} manner, keeping responses concise and helpful. 
+      If this is an e-commerce context, be helpful with product information, orders, and customer service.
+      If this is a business context, be professional and focus on services and consultations.
+      If this is a friends context, be casual and supportive.
+      If this is a support context, be technical and solution-focused.
+      If this is an education context, be informative and educational.`;
       
       const response = await axios.post('https://api.openai.com/v1/chat/completions', {
         model: 'gpt-3.5-turbo',

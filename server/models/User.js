@@ -105,6 +105,40 @@ const userSchema = new mongoose.Schema({
       start: { type: String, default: '09:00' },
       end: { type: String, default: '17:00' },
       timezone: { type: String, default: 'UTC' }
+    },
+    // User purpose category
+    purpose: {
+      type: String,
+      enum: ['general', 'ecommerce', 'friends', 'business', 'support', 'education', 'entertainment', 'healthcare', 'realestate', 'finance', 'custom'],
+      default: 'general'
+    },
+    // Niche-specific settings (for e-commerce and business)
+    niche: {
+      type: String,
+      enum: [
+        // E-commerce niches
+        'fashion', 'electronics', 'home_garden', 'beauty_health', 'sports_fitness', 
+        'books_media', 'toys_games', 'automotive', 'food_beverage', 'jewelry_watches',
+        // Business niches
+        'consulting', 'marketing', 'tech_services', 'healthcare_services', 'education_services',
+        'real_estate', 'finance_insurance', 'legal_services', 'travel_tourism', 'food_restaurant',
+        // General
+        'general', 'custom'
+      ],
+      default: 'general'
+    },
+    // Custom niche description
+    customNiche: {
+      type: String,
+      trim: true
+    },
+    // Business-specific settings
+    businessInfo: {
+      businessName: { type: String },
+      businessType: { type: String },
+      targetAudience: { type: String },
+      keyProducts: [{ type: String }],
+      businessGoals: [{ type: String }]
     }
   },
   // Analytics and usage
