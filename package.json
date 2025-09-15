@@ -1,0 +1,44 @@
+{
+  "name": "social-chatbot-app",
+  "version": "1.0.0",
+  "description": "Cross-platform chatbot application for WhatsApp, Instagram, and Snapchat",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "nodemon server/index.js",
+    "mobile:android": "cd mobile && npx react-native run-android",
+    "mobile:ios": "cd mobile && npx react-native run-ios",
+    "mobile:start": "cd mobile && npx react-native start",
+    "install:mobile": "cd mobile && npm install",
+    "install:backend": "npm install",
+    "install:all": "npm run install:backend && npm run install:mobile"
+  },
+  "keywords": [
+    "chatbot",
+    "whatsapp",
+    "instagram",
+    "snapchat",
+    "mobile",
+    "react-native"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "axios": "^1.6.0",
+    "mongoose": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "bcryptjs": "^2.4.3",
+    "multer": "^1.4.5-lts.1",
+    "socket.io": "^4.7.4",
+    "node-cron": "^3.0.3",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.1.5",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
