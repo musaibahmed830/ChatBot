@@ -17,6 +17,7 @@ import {
   ActivityIndicator,
 } from 'react-native-paper';
 import { useForm, Controller } from 'react-hook-form';
+import { useNavigation } from '@react-navigation/native';
 import { useAuthStore } from '../../store/authStore';
 import { theme, spacing } from '../../theme/theme';
 
@@ -26,6 +27,7 @@ interface LoginFormData {
 }
 
 const LoginScreen: React.FC = () => {
+  const navigation = useNavigation();
   const { login, isLoading } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
   
@@ -140,7 +142,7 @@ const LoginScreen: React.FC = () => {
 
             <Button
               mode="text"
-              onPress={() => {}}
+              onPress={() => navigation.navigate('ForgotPassword' as never)}
               style={styles.forgotButton}
             >
               Forgot Password?
@@ -152,7 +154,7 @@ const LoginScreen: React.FC = () => {
           <Text style={styles.footerText}>Don't have an account?</Text>
           <Button
             mode="text"
-            onPress={() => {}}
+            onPress={() => navigation.navigate('Register' as never)}
             style={styles.signUpButton}
           >
             Sign Up

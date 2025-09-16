@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { StatusBar } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { Provider as PaperProvider } from 'react-native-paper';
 import { QueryClient, QueryClientProvider } from 'react-query';
@@ -35,10 +35,7 @@ const App: React.FC = () => {
       <QueryClientProvider client={queryClient}>
         <PaperProvider theme={theme}>
           <NavigationContainer>
-            <StatusBar
-              barStyle="dark-content"
-              backgroundColor={theme.colors.background}
-            />
+            <StatusBar style="dark" />
             <AppNavigator />
           </NavigationContainer>
         </PaperProvider>

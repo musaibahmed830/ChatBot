@@ -17,6 +17,7 @@ import {
   ActivityIndicator,
 } from 'react-native-paper';
 import { useForm, Controller } from 'react-hook-form';
+import { useNavigation } from '@react-navigation/native';
 import { useAuthStore } from '../../store/authStore';
 import { theme, spacing } from '../../theme/theme';
 
@@ -31,6 +32,7 @@ interface RegisterFormData {
 }
 
 const RegisterScreen: React.FC = () => {
+  const navigation = useNavigation();
   const { register, isLoading } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -54,6 +56,12 @@ const RegisterScreen: React.FC = () => {
         lastName: data.lastName,
         phone: data.phone,
       });
+      // Registration successful - user will be automatically logged in and redirected
+      Alert.alert(
+        'Registration Successful!', 
+        'Welcome to Social Chatbot! Let\'s set up your chatbot preferences.',
+        [{ text: 'Continue', onPress: () => {} }]
+      );
     } catch (error: any) {
       Alert.alert('Registration Failed', error.message);
     }
@@ -281,7 +289,7 @@ const RegisterScreen: React.FC = () => {
           <Text style={styles.footerText}>Already have an account?</Text>
           <Button
             mode="text"
-            onPress={() => {}}
+            onPress={() => navigation.navigate('Login' as never)}
             style={styles.signInButton}
           >
             Sign In
